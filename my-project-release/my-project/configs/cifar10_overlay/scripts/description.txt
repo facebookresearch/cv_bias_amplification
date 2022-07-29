@@ -1,0 +1,16 @@
+CIFAR 10 w/ ResNets and overlays as inveresions.
+Shuffling group membership across subclasses. 
+
+Run with the following command:
+
+$ python -m torch.distributed.launch \
+            --nnodes=1 \
+            --nproc_per_node=1 \
+            --master_addr=localhost \
+            --master_port=29500 \
+            --use_env \
+            classy_train.py \
+            --config=configs/cifar10_overlay/models/[CONFIG FILE].json \
+            --checkpoint_folder=[CHECKPOINT_FOLDER] \
+            --log_freq=100 \
+            --distributed_backend=ddp

@@ -1,0 +1,80 @@
+{
+    "name": "biasamp_classification_task",
+    "num_epochs": 500,
+    "loss": {
+        "name": "CrossEntropyLoss"
+    },
+    "dataset": {
+        "train": {
+            "name": "fashionmnist_train",
+            "batchsize_per_replica": 128,
+            "shuffle": true,
+            "transforms": [
+                           {"name": "assign_class", "classes": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]},
+                           {"name": "invert_exact", "invert": [0]},
+                           {"name": "tuple_to_map", "list_of_map_keys": ["input", "original_target", "sample_id", "target", "attribute"]},
+                           {
+                            "name": "apply_transform_to_key", 
+                                "transforms": [
+                                    {"name": "RandomHorizontalFlip"},
+                                    {"name": "RandomResizedCrop", "size": 28},
+                                    {"name": "ToTensor"},
+                                    {
+                                        "name": "Normalize",
+                                        "mean": [0.2860],
+                                        "std": [0.3530]
+                                    }
+                                ],
+                                "key": "input"
+                           }
+                          ],
+            "num_workers": 8
+        },
+        "test": {
+            "name": "fashionmnist_test",
+            "batchsize_per_replica": 128,
+            "shuffle": true,
+            "transforms": [
+                           {"name": "assign_class", "classes": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1]},
+                           {"name": "invert_exact", "invert": [0]},
+                           {"name": "tuple_to_map", "list_of_map_keys": ["input", "original_target", "sample_id", "target", "attribute"]},
+                           {
+                            "name": "apply_transform_to_key", 
+                                "transforms": [
+                                    {"name": "ToTensor"},
+                                    {
+                                        "name": "Normalize",
+                                        "mean": [0.2860],
+                                        "std": [0.3530]
+                                    }
+                                ],
+                                "key": "input"
+                           }
+                          ],
+            "num_workers": 8
+        }
+    },
+    "meters": {
+        "accuracy": {
+            "topk": [1]
+        }
+    },
+    "model": {
+        "name": "custom_resnet",
+        "channels": 1,
+        "num_classes": 2,
+        "layers": [2, 2, 2, 2]
+    },
+    "optimizer": {
+        "name": "sgd",
+        "param_schedulers": {
+            "lr": {
+                "name": "multistep",
+                "values": [0.01, 0.1, 0.01, 0.001],
+                "milestones": [1, 250, 375]
+            }
+        },
+        "weight_decay": 1e-4,
+        "momentum": 0.9
+    }
+}

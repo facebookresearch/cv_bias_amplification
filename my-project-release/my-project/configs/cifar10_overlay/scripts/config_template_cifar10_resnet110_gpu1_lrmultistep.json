@@ -1,0 +1,102 @@
+{
+    "name": "biasamp_classification_task",
+    "num_epochs": 500,
+    "loss": {
+        "name": "CrossEntropyLoss"
+    },
+    "dataset": {
+        "train": {
+            "name": "cifar10_train_overlay",
+            "batchsize_per_replica": 128,
+            "shuffle": true,
+            "transforms": [
+                            {"name": "assign_class_str", "classes": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]},
+                            {"name": "tuple_to_map", "list_of_map_keys": ["input", "original_target", "sample_id", "attribute", "target"]},
+                           {
+                            "name": "apply_transform_to_key", 
+                                "transforms": [
+                                    {
+                                        "name": "PadToSize",
+                                        "size": [40, 40]
+                                    },
+                                    {
+                                        "name": "RandomHorizontalFlip"
+                                    },
+                                    {
+                                        "name": "RandomResizedCrop",
+                                        "size": 32
+                                    },
+                                    {"name": "ToTensor"},
+                                    {
+                                        "name": "Normalize",
+                                        "mean": [0.4914, 0.4822, 0.4465],
+                                        "std": [0.247, 0.243, 0.261]
+                                    }
+                                ],
+                                "key": "input"
+                           }
+                          ],
+            "num_workers": 8,
+            "num_samples": 10000,
+            "classes": []
+        },
+        "test": {
+            "name": "cifar10_test_overlay",
+            "batchsize_per_replica": 128,
+            "shuffle": true,
+            "transforms": [      
+                            {"name": "assign_class_str", "classes": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]},    
+                            {"name": "tuple_to_map", "list_of_map_keys": ["input", "original_target", "sample_id", "attribute", "target"]},
+                            {
+                            "name": "apply_transform_to_key", 
+                                "transforms": [
+                                    {"name": "ToTensor"},
+                                    {
+                                        "name": "Normalize",
+                                        "mean": [0.4914, 0.4822, 0.4465],
+                                        "std": [0.247, 0.243, 0.261]
+                                    }
+                                ],
+                                "key": "input"
+                           }
+                          ],
+            "num_workers": 8,
+            "num_samples": 2000,
+            "classes": []
+        }
+    },
+    "meters": {
+        "accuracy": {
+            "topk": [1]
+        }
+    },
+    "model": {                         
+        "name": "resnet",              
+        "num_blocks": [18, 18, 18],       
+        "small_input": true,           
+        "zero_init_bn_residuals": true,
+        "init_planes": 16,             
+        "basic_layer": true,           
+        "heads": [                     
+            {                            
+                "name": "fully_connected", 
+                "unique_id": "default_head",
+                "num_classes": 2,        
+                "fork_block": "block2-17",
+                "in_plane": 64
+            }                            
+        ]                              
+    },
+    "optimizer": {
+        "name": "sgd",
+        "param_schedulers": {
+            "lr": {
+                "name": "multistep",
+                "values": [0.01, 0.1, 0.01, 0.001],
+                "milestones": [1, 250, 375]
+            }
+        },
+        "weight_decay": 1e-4,
+        "momentum": 0.9
+    }
+}
