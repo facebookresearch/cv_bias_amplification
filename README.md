@@ -33,3 +33,6 @@ After the training the models with the configs, you can generate results with:
 * `/my-project-release/my-project/configs/fashionmnist/scripts $ python training_measurements.py`
 
 Model results are now viewable in `/my-project-release/my-project/configs/fashionmnist/scripts/results_overconf.py`. 
+
+# License
+cv_bias_amplification is MIT-licensed, as found in the LICENSE file.
